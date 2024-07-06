@@ -1,6 +1,7 @@
 ﻿using System.IO.Compression;
 
 List<Plant> plants = new List<Plant>()
+{
     new Plant()
     {
         Species = "bush",
@@ -9,7 +10,7 @@ List<Plant> plants = new List<Plant>()
         City = "Louisville",
         ZIP = 40108,
         Sold = true
-    }
+    },
     new Plant()
     {
         Species = "flower",
@@ -18,7 +19,7 @@ List<Plant> plants = new List<Plant>()
         City = "Lexington",
         ZIP = 40258,
         Sold = true
-    }
+    },
     new Plant()
     {
         Species = "bean",
@@ -27,7 +28,7 @@ List<Plant> plants = new List<Plant>()
         City = "Brandenburg",
         ZIP = 40175,
         Sold = false
-    }
+    },
     new Plant()
     {
         Species = "grass",
@@ -36,7 +37,7 @@ List<Plant> plants = new List<Plant>()
         City = "Nashville",
         ZIP = 37208,
         Sold = false
-    }
+    },
     new Plant()
     {
         Species = "tree",
@@ -45,4 +46,17 @@ List<Plant> plants = new List<Plant>()
         City = "Brentwood",
         ZIP = 37027,
         Sold = false
+    },
+};
+
+string greeting = "Welcome to Extravert!";
+Console.WriteLine(greeting);
+ListPlants();
+void ListPlants()
+{
+    for (int i = 0; i < plants.Count; i++)
+    {
+        Console.WriteLine($"{i + 1}. {plants[i].Species}");
     }
+}
+Console.ReadLine();
