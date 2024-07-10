@@ -10,7 +10,8 @@ List<Plant> plants = new List<Plant>()
         AskingPrice = 15.99M,
         City = "Louisville",
         ZIP = 40108,
-        Sold = true
+        Sold = true,
+        AvailableUntil = new DateTime(2024, 7, 15)
     },
     new Plant()
     {
@@ -19,7 +20,8 @@ List<Plant> plants = new List<Plant>()
         AskingPrice = 18.99M,
         City = "Lexington",
         ZIP = 40258,
-        Sold = true
+        Sold = true,
+        AvailableUntil = new DateTime(2024, 8, 15)
     },
     new Plant()
     {
@@ -28,7 +30,8 @@ List<Plant> plants = new List<Plant>()
         AskingPrice = 5.99M,
         City = "Brandenburg",
         ZIP = 40175,
-        Sold = false
+        Sold = false,
+        AvailableUntil = new DateTime(2024, 6, 15)
     },
     new Plant()
     {
@@ -37,7 +40,8 @@ List<Plant> plants = new List<Plant>()
         AskingPrice = 10.99M,
         City = "Nashville",
         ZIP = 37208,
-        Sold = false
+        Sold = false,
+        AvailableUntil = new DateTime(2024, 10, 15)
     },
     new Plant()
     {
@@ -46,7 +50,8 @@ List<Plant> plants = new List<Plant>()
         AskingPrice = 26.99M,
         City = "Brentwood",
         ZIP = 37027,
-        Sold = false
+        Sold = false,
+        AvailableUntil = new DateTime(2024, 11, 15)
     },
 };
 
@@ -61,9 +66,11 @@ while (choice != "0")
                             0. Exit
                             1. Display all plants
                             2. Plant of the Day!
-                            3. Post a plant to be adopted
-                            4. Adopt a plant
-                            5. Delist a plant");
+                            3. Search Plants by Light Needs
+                            4. Post a plant to be adopted
+                            5. Adopt a plant
+                            6. Delist a plant
+                            7. View App Statistics");
     choice = Console.ReadLine();
     if (choice == "0")
     {
@@ -79,15 +86,23 @@ while (choice != "0")
     }
     else if (choice == "3")
     {
-        PostPlant();
+        SearchLightNeeds();
     }
     else if (choice == "4")
     {
-        AdoptPlant();
+        PostPlant();
     }
     else if (choice == "5")
     {
+        AdoptPlant();
+    }
+    else if (choice == "6")
+    {
         RemovePlant();
+    }
+    else if (choice == "7")
+    {
+        AppStatistics();
     }
     else
     {
@@ -98,7 +113,7 @@ void DisplayPlants()
 {
     for (int i = 0; i < plants.Count; i++)
     {
-        Console.WriteLine($"{i + 1}. A {plants[i].Species} in {plants[i].City} {(plants[i].Sold ? "was sold" : "is available")} for {plants[i].AskingPrice} dollars");
+        Console.WriteLine($"{i + 1}. A {plants[i].Species} in {plants[i].City} {(plants[i].Sold ? "was sold" : "is available")} untlil {plants[i].AvailableUntil} for {plants[i].AskingPrice} dollars");
     }
 }
 
@@ -119,7 +134,25 @@ void PostPlant()
     Console.WriteLine("Enter the ZIP code");
     int zip = int.Parse(Console.ReadLine());
 
- 
+    Console.WriteLine("Enter the expiration date (yyyy-mm-dd):");
+    DateTime expirationDate = DateTime.MinValue;
+    bool isValidDate = false;
+    while (!isValidDate)
+    {
+        try
+        {
+            isValidDate = DateTime.TryParse(Console.ReadLine(), out expirationDate);
+            if (!isValidDate)
+            {
+                Console.WriteLine("Invalid date format. Please enter the expiration date (yyyy-mm-dd):");
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine("Please enter the expiration date (yyyy-mm-dd):");
+        }
+    }
+
 
     Plant newPlant = new Plant()
     {
@@ -128,7 +161,8 @@ void PostPlant()
         AskingPrice = askingPrice,
         City = city,
         ZIP = zip,
-        Sold = false
+        Sold = false,
+        AvailableUntil = expirationDate
     };
     plants.Add(newPlant);
     Console.WriteLine("Your plant has been listed!");
@@ -136,12 +170,12 @@ void PostPlant()
 
 void AdoptPlant()
 {
-    var availablePlants = plants.Where(p => !p.Sold).ToList();
+    var availablePlants = plants.Where(p => !p.Sold && DateTime.Now <= p.AvailableUntil).ToList();
 
     Console.WriteLine("Available Plants:");
     for (int i = 0; i < availablePlants.Count; i++)
     {
-        Console.WriteLine($"{i + 1}. A {availablePlants[i].Species} in {availablePlants[i].City} {(availablePlants[i].Sold ? "was sold" : "is available")} for {availablePlants[i].AskingPrice} dollars");
+        Console.WriteLine($"{i + 1}. A {availablePlants[i].Species} in {availablePlants[i].City} {(availablePlants[i].Sold ? "was sold" : "is available")} until {availablePlants[i].AvailableUntil} for {availablePlants[i].AskingPrice} dollars");
     };
    
     Console.WriteLine("Please enter the number of which plant you would like to adopt:");
@@ -197,8 +231,48 @@ void RandomPlant()
 void SearchLightNeeds()
 {
     Console.WriteLine("Please enter your maximum light needs (number between 1 & 5):");
-
+    int maxLightNeeds;
+    if (int.TryParse(Console.ReadLine(), out maxLightNeeds) && maxLightNeeds > 0 && maxLightNeeds <= 5)
+    {
+        var matchingPlants = new List<Plant>();
+        foreach (var plant in plants)
+        {
+            if (plant.LightNeeds <= maxLightNeeds)
+            {
+                matchingPlants.Add(plant);
+            }
+        }
+        
+        Console.WriteLine($"Plants with light needs {maxLightNeeds} or lower:");
+        foreach (var plant in matchingPlants)
+        {
+            Console.WriteLine(PlantDetails(plant));
+        }
+    }
+    else
+    {
+        Console.WriteLine("Invalid entry. Please enter a valid number.");
+    }
 
 }
 
+void AppStatistics()
+{
+    var lowestPricePlant = plants.OrderBy(p => p.AskingPrice).First();
+    var numberOfPlants = plants.Count();
+    var highestLightNeedsPlant = plants.OrderByDescending(p => p.LightNeeds).First();
+    var averageLightNeeds = plants.Average(p => p.LightNeeds);
+    double adoptionRate = (double)plants.Count(p => p.Sold)/plants.Count * 100;
+    Console.WriteLine($@"Lowest price plant name: {lowestPricePlant.Species}
+    Number of plants available: {numberOfPlants}
+    Name of plant with highest light needs: {highestLightNeedsPlant.Species}
+    Average light needs: {averageLightNeeds}
+    Percentage of plants adopted: {adoptionRate}%");
+}
+
+string PlantDetails(Plant plant)
+{
+    string plantString = $"A {plant.Species} in {plant.City} {(plant.Sold ? "was sold" : "is available")} for {plant.AskingPrice} dollars";
+    return plantString;
+}
 Console.ReadLine();
